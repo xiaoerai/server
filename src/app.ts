@@ -1,10 +1,10 @@
-import express from 'express'
+import express, { Express } from 'express'
 import cors from 'cors'
 import { errorHandler } from './middleware/error'
 import { logger } from './middleware/logger'
 import routes from './routes'
 
-const app = express()
+const app: Express = express()
 
 // 中间件
 app.use(cors())
