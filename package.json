@@ -1,6 +1,9 @@
 {
   "name": "ai-xiaoer-server",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22"
+  },
   "description": "AI小二后端服务",
   "main": "dist/index.js",
   "scripts": {
