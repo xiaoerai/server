@@ -1,4 +1,4 @@
-import { verifySmsCode, deleteSmsCode, findUserByOpenid, createUser, updateUserLogin } from './db'
+import { verifySmsCode, deleteSmsCode, findUserByOpenid, createUser, updateUserLogin } from '../db'
 import { code2Session } from './wechat'
 import { signToken } from '../utils/jwt'
 

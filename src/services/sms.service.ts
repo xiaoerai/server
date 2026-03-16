@@ -1,4 +1,4 @@
-import { saveSmsCode, canSendSmsCode } from './db'
+import { saveSmsCode, canSendSmsCode } from '../db'
 import { generateCode, sendSmsCode } from './sms'
 
 export async function sendVerificationCode(phone: string): Promise<void> {

@@ -1,15 +1,4 @@
-import tcb from '@cloudbase/node-sdk'
-
-// 云开发初始化
-const app = tcb.init({
-  env: process.env.TCB_ENV_ID!,
-  secretId: process.env.TCB_SECRET_ID,
-  secretKey: process.env.TCB_SECRET_KEY,
-})
-
-export const db = app.database()
-
-// ============ 验证码相关 ============
+import { db } from './client'
 
 export interface SmsCode {
   phone: string
@@ -78,66 +67,4 @@ export async function canSendSmsCode(phone: string): Promise<boolean> {
 
   // 60秒内不能重复发送
   return elapsed >= 60 * 1000
-}
-
-// ============ 用户相关 ============
-
-export interface User {
-  _id?: string
-  openid: string
-  phone: string
-  createdAt: Date
-  lastLoginAt: Date
-}
-
-export async function findUserByOpenid(openid: string): Promise<User | null> {
-  const { data } = await db.collection('users').where({ openid }).get()
-  return (data[0] as User) || null
-}
-
-export async function findUserByPhone(phone: string): Promise<User | null> {
-  const { data } = await db.collection('users').where({ phone }).get()
-  return (data[0] as User) || null
-}
-
-export async function createUser(openid: string, phone: string): Promise<void> {
-  const now = new Date()
-  await db.collection('users').add({
-    openid,
-    phone,
-    createdAt: now,
-    lastLoginAt: now,
-  })
-}
-
-export async function updateUserLogin(openid: string): Promise<void> {
-  await db.collection('users').where({ openid }).update({
-    lastLoginAt: new Date(),
-  })
-}
-
-// ============ 订单相关 ============
-
-export interface Order {
-  _id?: string
-  orderId: string
-  hotelId: string
-  phone: string
-  roomNumber: string
-  checkInDate: string
-  checkOutDate: string
-  depositStatus: 'unpaid' | 'paid' | 'refunded'
-  status: 'pending' | 'checked_in' | 'checked_out'
-  createdAt: Date
-  updatedAt: Date
-}
-
-export async function findOrdersByPhone(phone: string): Promise<Order[]> {
-  const { data } = await db
-    .collection('orders')
-    .where({ phone })
-    .orderBy('checkInDate', 'desc')
-    .get()
-
-  return data as Order[]
 }

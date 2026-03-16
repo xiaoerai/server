@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-// import { findOrdersByPhone } from '../services/db'
+// import { findOrdersByPhone } from '../db'
 
 // GET /api/orders?phone=xxx
 export async function getOrders(req: Request, res: Response, next: NextFunction) {
