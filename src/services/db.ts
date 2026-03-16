@@ -22,22 +22,29 @@ export async function saveSmsCode(phone: string, code: string): Promise<void> {
   const expireAt = new Date(Date.now() + 5 * 60 * 1000) // 5分钟后过期
   const createdAt = new Date()
 
+  console.log(`[验证码] 保存: phone="${phone}", code="${code}"`)
+
   // 先删除旧的验证码
-  await db.collection('sms_codes').where({ phone }).remove()
+  const removeResult = await db.collection('sms_codes').where({ phone }).remove()
+  console.log(`[验证码] 删除旧记录:`, removeResult)
 
   // 保存新验证码
-  await db.collection('sms_codes').add({
+  const addResult = await db.collection('sms_codes').add({
     phone,
     code,
     expireAt,
     createdAt,
   })
+  console.log(`[验证码] 新记录已保存:`, addResult)
 }
 
 export async function verifySmsCode(phone: string, code: string): Promise<boolean> {
+  console.log(`[验证码] 验证: phone=${phone}, code=${code}`)
   const { data } = await db.collection('sms_codes').where({ phone, code }).get()
+  console.log(`[验证码] 查询结果:`, data)
 
   if (data.length === 0) {
+    console.log(`[验证码] 未找到匹配记录`)
     return false
   }
 
@@ -45,13 +52,17 @@ export async function verifySmsCode(phone: string, code: string): Promise<boolea
 
   // 检查是否过期
   if (new Date(record.expireAt) < new Date()) {
+    console.log(`[验证码] 已过期`)
     return false
   }
 
-  // 验证成功，删除验证码
-  await db.collection('sms_codes').where({ phone }).remove()
-
+  console.log(`[验证码] 验证成功`)
   return true
+}
+
+// 删除验证码（登录成功后调用）
+export async function deleteSmsCode(phone: string): Promise<void> {
+  await db.collection('sms_codes').where({ phone }).remove()
 }
 
 // 检查是否可以发送验证码（60秒限制）

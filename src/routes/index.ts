@@ -1,6 +1,7 @@
 import express from 'express'
 import smsRouter from './sms'
 import authRouter from './auth'
+import ordersRouter from './orders'
 
 const router = express.Router()
 
@@ -8,8 +9,10 @@ const router = express.Router()
 router.use('/sms', smsRouter)
 router.use('/auth', authRouter)
 
+// 订单
+router.use('/orders', ordersRouter)
+
 // TODO: 添加其他路由
-// router.use('/orders', ordersRouter)
 // router.use('/checkin', checkinRouter)
 // router.use('/deposit', depositRouter)
 // router.use('/checkout', checkoutRouter)

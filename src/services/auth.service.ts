@@ -1,4 +1,4 @@
-import { verifySmsCode, findUserByOpenid, createUser, updateUserLogin } from './db'
+import { verifySmsCode, deleteSmsCode, findUserByOpenid, createUser, updateUserLogin } from './db'
 import { code2Session } from './wechat'
 import { signToken } from '../utils/jwt'
 
@@ -31,6 +31,9 @@ export async function loginWithSmsCode(
 
   // 4. 生成 JWT
   const token = signToken({ openid, phone })
+
+  // 5. 登录成功，删除验证码
+  await deleteSmsCode(phone)
 
   return {
     token,
