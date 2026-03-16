@@ -1,12 +1,35 @@
+import jwt from 'jsonwebtoken'
 import { verifySmsCode, deleteSmsCode, findUserByOpenid, createUser, updateUserLogin } from '../db'
 import { code2Session } from './wechat'
-import { signToken } from '../utils/jwt'
 
+// JWT 配置
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_me'
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
+
+interface JwtPayload {
+  openid: string
+  phone: string
+}
+
+function signToken(payload: JwtPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions)
+}
+
+export function verifyToken(token: string): JwtPayload | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as JwtPayload
+  } catch {
+    return null
+  }
+}
+
+// 登录结果
 export interface LoginResult {
   token: string
   user: { phone: string }
 }
 
+// 短信验证码登录
 export async function loginWithSmsCode(
   wxCode: string,
   phone: string,
