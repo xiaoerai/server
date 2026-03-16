@@ -15,8 +15,10 @@ interface Code2SessionResponse {
 export async function code2Session(code: string): Promise<string> {
   const { WECHAT_APPID, WECHAT_APP_SECRET } = process.env
 
+  // 未配置微信 AppID：直接用前端传来的 code 作为 openid
   if (!WECHAT_APPID || !WECHAT_APP_SECRET) {
-    throw new Error('微信小程序配置缺失')
+    console.log(`[WeChat] 开发模式，openid: ${code}`)
+    return code
   }
 
   const url = new URL('https://api.weixin.qq.com/sns/jscode2session')
