@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { verifySmsCode, deleteSmsCode, findUserByOpenid, createUser, updateUserLogin } from '../db'
-import { code2Session } from './wechat'
+import { code2Session } from './wechat.service'
 
 // JWT 配置
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_me'
