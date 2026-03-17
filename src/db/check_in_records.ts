@@ -2,17 +2,15 @@ import { db } from './client'
 
 export interface CheckInRecord {
   _id?: string
-  hostexOrderId: string       // 百居易订单ID
-  roomId: string              // 百居易房型ID
-  roomName: string            // 房间名称（冗余存储，方便显示）
-  phone: string               // 入住人手机号
-  checkInDate: string         // 入住日期
-  checkOutDate: string        // 退房日期
+  hostexOrderId: string // 百居易订单ID
+  roomId: string // 百居易房型ID
+  roomName: string // 房间名称（冗余存储，方便显示）
+  phone: string // 入住人手机号
+  checkInDate: string // 入住日期
+  checkOutDate: string // 退房日期
 
-  idUploaded: boolean         // 是否已上传身份证
-  idImageUrl?: string         // 身份证照片URL
-  depositPaid: boolean        // 是否已支付押金
-  depositAmount?: number      // 押金金额
+  depositPaid: boolean // 是否已支付押金
+  depositAmount?: number // 押金金额
 
   status: 'pending' | 'checked_in' | 'checked_out'
 
@@ -30,10 +28,7 @@ export async function findRecordByOrderId(hostexOrderId: string): Promise<CheckI
 
 // 根据手机号查找记录
 export async function findRecordsByPhone(phone: string): Promise<CheckInRecord[]> {
-  const { data } = await collection
-    .where({ phone })
-    .orderBy('checkInDate', 'desc')
-    .get()
+  const { data } = await collection.where({ phone }).orderBy('checkInDate', 'desc').get()
   return data as CheckInRecord[]
 }
 
@@ -47,13 +42,13 @@ export async function createCheckInRecord(
     createdAt: now,
     updatedAt: now,
   })
-  return id
+  return id as string
 }
 
 // 更新入住记录
 export async function updateCheckInRecord(
   hostexOrderId: string,
-  updates: Partial<Pick<CheckInRecord, 'idUploaded' | 'idImageUrl' | 'depositPaid' | 'depositAmount' | 'status'>>
+  updates: Partial<Pick<CheckInRecord, 'depositPaid' | 'depositAmount' | 'status'>>
 ): Promise<void> {
   await collection.where({ hostexOrderId }).update({
     ...updates,

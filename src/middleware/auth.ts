@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { verifyToken, JwtPayload } from '../utils/jwt'
+import { verifyToken, JwtPayload } from '../services/auth.service'
 import { Errors } from './error'
 
 // 扩展 Request 类型

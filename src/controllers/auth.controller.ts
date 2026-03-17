@@ -1,19 +1,16 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response } from 'express'
 import { loginWithSmsCode } from '../services/auth.service'
 import { LoginInput } from '../schemas/auth'
+import { asyncHandler } from '../middleware/error'
 
 // POST /api/auth/login - 登录
-export async function login(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { code, phone, smsCode } = req.validated as LoginInput
+export const login = asyncHandler(async (req: Request, res: Response) => {
+  const { code, phone, smsCode } = req.validated as LoginInput
 
-    const data = await loginWithSmsCode(code, phone, smsCode)
+  const data = await loginWithSmsCode(code, phone, smsCode)
 
-    res.json({
-      success: true,
-      data,
-    })
-  } catch (err) {
-    next(err)
-  }
-}
+  res.json({
+    success: true,
+    data,
+  })
+})

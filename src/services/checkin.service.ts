@@ -1,0 +1,72 @@
+/**
+ * 入住服务
+ */
+
+import { createCheckInRecord, findRecordByOrderId, updateCheckInRecord, CheckInRecord } from '../db'
+import { Errors } from '../middleware/error'
+
+export interface CreateCheckInParams {
+  orderId: string
+  roomId: string
+  roomName: string
+  phone: string
+  checkInDate: string
+  checkOutDate: string
+}
+
+export interface UpdateCheckInParams {
+  depositPaid?: boolean
+  depositAmount?: number
+  status?: CheckInRecord['status']
+}
+
+/**
+ * 创建入住记录
+ */
+export async function createCheckIn(params: CreateCheckInParams): Promise<CheckInRecord> {
+  const { orderId, roomId, roomName, phone, checkInDate, checkOutDate } = params
+
+  // 检查是否已存在
+  const existing = await findRecordByOrderId(orderId)
+  if (existing) {
+    throw Errors.conflict('该订单已办理入住')
+  }
+
+  const record: Omit<CheckInRecord, '_id' | 'createdAt' | 'updatedAt'> = {
+    hostexOrderId: orderId,
+    roomId,
+    roomName,
+    phone,
+    checkInDate,
+    checkOutDate,
+    depositPaid: false,
+    status: 'pending',
+  }
+
+  const id = await createCheckInRecord(record)
+
+  console.log(`[CheckIn] 创建入住记录: ${orderId}, id=${id}`)
+
+  return { _id: id, ...record, createdAt: new Date(), updatedAt: new Date() }
+}
+
+/**
+ * 查询入住记录
+ */
+export async function getCheckInByOrderId(orderId: string): Promise<CheckInRecord | null> {
+  return findRecordByOrderId(orderId)
+}
+
+/**
+ * 更新入住记录
+ */
+export async function updateCheckIn(orderId: string, params: UpdateCheckInParams): Promise<void> {
+  const existing = await findRecordByOrderId(orderId)
+  if (!existing) {
+    throw Errors.notFound('未找到入住记录')
+  }
+
+  await updateCheckInRecord(orderId, params)
+
+  console.log(`[CheckIn] 更新入住记录: ${orderId}`, params)
+}

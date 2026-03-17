@@ -1,6 +1,15 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction, RequestHandler } from 'express'
 
 const isDev = process.env.NODE_ENV !== 'production'
+
+// Async handler - 让 async controller 可以直接 throw
+type AsyncFn = (req: Request, res: Response, next: NextFunction) => Promise<any>
+
+export const asyncHandler = (fn: AsyncFn): RequestHandler => {
+  return (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
+}
 
 export class AppError extends Error {
   constructor(

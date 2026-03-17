@@ -6,7 +6,7 @@ import { code2Session } from './wechat.service'
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_me'
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
 
-interface JwtPayload {
+export interface JwtPayload {
   openid: string
   phone: string
 }
