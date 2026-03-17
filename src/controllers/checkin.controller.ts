@@ -15,7 +15,10 @@ export const createCheckIn = asyncHandler(async (req: Request, res: Response) =>
     throw Errors.badRequest('缺少住客信息')
   }
 
-  // 1. 创建入住记录
+  // 1. 创建住客
+  const guestId = await guestService.createGuest(guest)
+
+  // 2. 创建入住记录（直接带上 guestId）
   const record = await checkinService.createCheckIn({
     orderId,
     roomId,
@@ -23,10 +26,8 @@ export const createCheckIn = asyncHandler(async (req: Request, res: Response) =>
     phone,
     checkInDate,
     checkOutDate,
+    guestIds: [guestId],
   })
-
-  // 2. 创建住客记录
-  await guestService.addGuest(record._id!, guest)
 
   res.json({ success: true, data: record })
 })

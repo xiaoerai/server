@@ -2,18 +2,19 @@ import { db } from './client'
 
 export interface Guest {
   _id?: string
-  checkInRecordId: string // 入住记录ID
   name: string // 姓名
   idNumber: string // 身份证号
   idImageUrl?: string // 身份证照片
   createdAt: Date
 }
 
+const _ = db.command
 const collection = db.collection('guests')
 
-// 根据入住记录ID查找住客
-export async function findGuestsByRecordId(checkInRecordId: string): Promise<Guest[]> {
-  const { data } = await collection.where({ checkInRecordId }).get()
+// 根据ID列表查找住客
+export async function findGuestsByIds(ids: string[]): Promise<Guest[]> {
+  if (ids.length === 0) return []
+  const { data } = await collection.where({ _id: _.in(ids) }).get()
   return data as Guest[]
 }
 

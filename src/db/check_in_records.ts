@@ -1,13 +1,17 @@
 import { db } from './client'
 
+const _ = db.command
+
 export interface CheckInRecord {
   _id?: string
   hostexOrderId: string // 百居易订单ID
   roomId: string // 百居易房型ID
   roomName: string // 房间名称（冗余存储，方便显示）
-  phone: string // 入住人手机号
+  phone: string // 下单人手机号
   checkInDate: string // 入住日期
   checkOutDate: string // 退房日期
+
+  guestIds: string[] // 住客ID列表
 
   depositPaid: boolean // 是否已支付押金
   depositAmount?: number // 押金金额
@@ -63,6 +67,14 @@ export async function updateRecordStatus(
 ): Promise<void> {
   await collection.where({ hostexOrderId }).update({
     status,
+    updatedAt: new Date(),
+  })
+}
+
+// 添加住客ID到记录
+export async function addGuestIdToRecord(recordId: string, guestId: string): Promise<void> {
+  await collection.doc(recordId).update({
+    guestIds: _.push(guestId),
     updatedAt: new Date(),
   })
 }

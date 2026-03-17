@@ -2,7 +2,7 @@
  * 住客服务
  */
 
-import { createGuest, findGuestsByRecordId, Guest } from '../db'
+import { createGuest as dbCreateGuest, findGuestsByIds, addGuestIdToRecord, Guest } from '../db'
 
 export interface GuestInput {
   name: string
@@ -11,24 +11,31 @@ export interface GuestInput {
 }
 
 /**
- * 添加住客
+ * 创建住客
  */
-export async function addGuest(checkInRecordId: string, guest: GuestInput): Promise<string> {
-  const guestId = await createGuest({
-    checkInRecordId,
+export async function createGuest(guest: GuestInput): Promise<string> {
+  const guestId = await dbCreateGuest({
     name: guest.name,
     idNumber: guest.idNumber,
     idImageUrl: guest.idImageUrl,
   })
 
-  console.log(`[Guest] 添加住客: recordId=${checkInRecordId}, guestId=${guestId}`)
+  console.log(`[Guest] 创建住客: guestId=${guestId}`)
 
   return guestId
 }
 
 /**
- * 获取入住记录的所有住客
+ * 添加住客到入住记录
  */
-export async function getGuestsByRecordId(checkInRecordId: string): Promise<Guest[]> {
-  return findGuestsByRecordId(checkInRecordId)
+export async function addGuestToCheckInRecord(recordId: string, guestId: string): Promise<void> {
+  await addGuestIdToRecord(recordId, guestId)
+  console.log(`[Guest] 关联住客到入住记录: recordId=${recordId}, guestId=${guestId}`)
+}
+
+/**
+ * 根据ID列表获取住客
+ */
+export async function getGuestsByIds(ids: string[]): Promise<Guest[]> {
+  return findGuestsByIds(ids)
 }
