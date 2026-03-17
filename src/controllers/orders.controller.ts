@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-// import { findOrdersByPhone } from '../db'
+import { findOrders } from '../services/hostex.service'
 
 // GET /api/orders?phone=xxx
 export async function getOrders(req: Request, res: Response, next: NextFunction) {
@@ -14,32 +14,23 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
       return
     }
 
-    // TODO: 正式环境从数据库查询
-    // const orders = await findOrdersByPhone(phone)
+    // TODO: 后续从数据库获取民宿对应的凭证
+    const credentials = {
+      session: process.env.HOSTEX_SESSION!,
+      operatorId: process.env.HOSTEX_OPERATOR_ID!,
+    }
 
-    // 开发阶段：返回模拟订单数据
-    const mockOrders = [
-      {
-        orderId: 'ORD20260316001',
-        roomNumber: '悦享大床房 301',
-        checkInDate: '2026-03-16',
-        checkOutDate: '2026-03-18',
-      },
-      {
-        orderId: 'ORD20260316002',
-        roomNumber: '豪华双床房 502',
-        checkInDate: '2026-03-16',
-        checkOutDate: '2026-03-17',
-      },
-    ]
+    // 实时调用百居易 API 查询订单
+    const orders = await findOrders(credentials, { phone })
 
-    console.log(`[Orders] 返回模拟订单给 ${phone}:`, mockOrders.length, '条')
+    console.log(`[Orders] 查询到 ${orders.length} 条订单 (phone: ${phone})`)
 
     res.json({
       success: true,
-      data: mockOrders,
+      data: orders,
     })
   } catch (err) {
+    console.error('[Orders] 查询失败:', err)
     next(err)
   }
 }
