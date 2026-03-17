@@ -2,4 +2,4 @@
 export { db } from './client'
 export * from './sms'
 export * from './users'
-export * from './orders'
+export * from './check_in_records'

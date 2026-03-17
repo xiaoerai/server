@@ -10,7 +10,7 @@ const app = tcb.init({
 const db = app.database()
 
 async function initCollections() {
-  const collections = ['sms_codes', 'users', 'orders', 'guests', 'rooms']
+  const collections = ['sms_codes', 'users', 'check_in_records', 'guests', 'rooms']
 
   for (const name of collections) {
     try {
