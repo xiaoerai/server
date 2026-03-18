@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import * as checkinService from '../services/checkin.service'
 import * as guestService from '../services/guest.service'
+import { addGuestIdToUser } from '../db'
 import { asyncHandler, Errors } from '../middleware/error'
 
 // 创建入住记录 + 主住客信息
@@ -28,6 +29,13 @@ export const createCheckIn = asyncHandler(async (req: Request, res: Response) =>
     checkOutDate,
     guestIds: [guestId],
   })
+
+  // 3. 关联住客到用户（失败不影响入住）
+  try {
+    await addGuestIdToUser(phone, guestId)
+  } catch (err) {
+    console.log('[CheckIn] 关联住客到用户失败:', err)
+  }
 
   res.json({ success: true, data: record })
 })

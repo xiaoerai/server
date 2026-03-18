@@ -29,23 +29,12 @@ export interface LoginResult {
   user: { phone: string }
 }
 
-// 测试手机号
-const MOCK_PHONE = '15290500792'
-
 // 短信验证码登录
 export async function loginWithSmsCode(
   wxCode: string,
   phone: string,
   smsCode: string
 ): Promise<LoginResult> {
-  // 测试手机号：跳过验证码校验
-  if (phone === MOCK_PHONE) {
-    console.log(`[Auth] 测试手机号登录，跳过验证码 (phone: ${phone})`)
-    const openid = `mock_openid_${phone}`
-    const token = signToken({ openid, phone })
-    return { token, user: { phone } }
-  }
-
   // 1. 验证短信验证码
   const isValid = await verifySmsCode(phone, smsCode)
   if (!isValid) {

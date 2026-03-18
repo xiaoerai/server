@@ -4,6 +4,7 @@ export interface User {
   _id?: string
   openid: string
   phone: string
+  guestIds?: string[] // 关联的住客ID列表（按最近使用排序）
   createdAt: Date
   lastLoginAt: Date
 }
@@ -31,5 +32,19 @@ export async function createUser(openid: string, phone: string): Promise<void> {
 export async function updateUserLogin(openid: string): Promise<void> {
   await db.collection('users').where({ openid }).update({
     lastLoginAt: new Date(),
+  })
+}
+
+// 关联住客到用户（最近使用的排最前，去重）
+export async function addGuestIdToUser(phone: string, guestId: string): Promise<void> {
+  const user = await findUserByPhone(phone)
+  if (!user) return
+
+  const existing = user.guestIds || []
+  // 去重：先移除已有的，再插入到头部
+  const updated = [guestId, ...existing.filter((id) => id !== guestId)]
+
+  await db.collection('users').where({ phone }).update({
+    guestIds: updated,
   })
 }
