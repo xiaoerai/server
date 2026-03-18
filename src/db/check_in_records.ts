@@ -13,8 +13,8 @@ export interface CheckInRecord {
 
   guestIds: string[] // 住客ID列表
 
+  depositId?: string // 关联押金记录ID
   depositPaid: boolean // 是否已支付押金
-  depositAmount?: number // 押金金额
 
   status: 'pending' | 'checked_in' | 'checked_out'
 
@@ -52,7 +52,7 @@ export async function createCheckInRecord(
 // 更新入住记录
 export async function updateCheckInRecord(
   hostexOrderId: string,
-  updates: Partial<Pick<CheckInRecord, 'depositPaid' | 'depositAmount' | 'status'>>
+  updates: Partial<Pick<CheckInRecord, 'depositId' | 'depositPaid' | 'status'>>
 ): Promise<void> {
   await collection.where({ hostexOrderId }).update({
     ...updates,

@@ -48,13 +48,9 @@ export const getCheckIn = asyncHandler(async (req: Request, res: Response) => {
 // 更新入住记录
 export const updateCheckIn = asyncHandler(async (req: Request, res: Response) => {
   const { orderId } = req.params
-  const { depositPaid, depositAmount, status } = req.body
+  const { status } = req.body
 
-  await checkinService.updateCheckIn(orderId, {
-    depositPaid,
-    depositAmount,
-    status,
-  })
+  await checkinService.updateCheckIn(orderId, { status })
 
   res.json({ success: true })
 })

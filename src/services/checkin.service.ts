@@ -16,8 +16,7 @@ export interface CreateCheckInParams {
 }
 
 export interface UpdateCheckInParams {
-  depositPaid?: boolean
-  depositAmount?: number
+  depositId?: string
   status?: CheckInRecord['status']
 }
 
