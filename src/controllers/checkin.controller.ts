@@ -38,10 +38,6 @@ export const getCheckIn = asyncHandler(async (req: Request, res: Response) => {
 
   const record = await checkinService.getCheckInByOrderId(orderId)
 
-  if (!record) {
-    throw Errors.notFound('未找到入住记录')
-  }
-
   res.json({ success: true, data: record })
 })
 

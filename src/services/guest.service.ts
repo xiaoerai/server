@@ -2,7 +2,7 @@
  * 住客服务
  */
 
-import { createGuest as dbCreateGuest, findGuestsByIds, addGuestIdToRecord, Guest } from '../db'
+import { createGuest as dbCreateGuest, findGuestByIdNumber, findGuestsByIds, addGuestIdToRecord, Guest } from '../db'
 
 export interface GuestInput {
   name: string
@@ -11,9 +11,15 @@ export interface GuestInput {
 }
 
 /**
- * 创建住客
+ * 创建或查找住客（按身份证号去重）
  */
 export async function createGuest(guest: GuestInput): Promise<string> {
+  const existing = await findGuestByIdNumber(guest.idNumber)
+  if (existing) {
+    console.log(`[Guest] 已存在住客: idNumber=${guest.idNumber}, guestId=${existing._id}`)
+    return existing._id!
+  }
+
   const guestId = await dbCreateGuest({
     name: guest.name,
     idNumber: guest.idNumber,

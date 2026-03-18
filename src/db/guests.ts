@@ -11,6 +11,12 @@ export interface Guest {
 const _ = db.command
 const collection = db.collection('guests')
 
+// 根据身份证号查找住客
+export async function findGuestByIdNumber(idNumber: string): Promise<Guest | null> {
+  const { data } = await collection.where({ idNumber }).get()
+  return (data[0] as Guest) || null
+}
+
 // 根据ID列表查找住客
 export async function findGuestsByIds(ids: string[]): Promise<Guest[]> {
   if (ids.length === 0) return []
