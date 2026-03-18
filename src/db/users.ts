@@ -48,3 +48,15 @@ export async function addGuestIdToUser(phone: string, guestId: string): Promise<
     guestIds: updated,
   })
 }
+
+// 从用户的住客列表中移除
+export async function removeGuestIdFromUser(phone: string, guestId: string): Promise<void> {
+  const user = await findUserByPhone(phone)
+  if (!user || !user.guestIds) return
+
+  const updated = user.guestIds.filter((id) => id !== guestId)
+
+  await db.collection('users').where({ phone }).update({
+    guestIds: updated,
+  })
+}
