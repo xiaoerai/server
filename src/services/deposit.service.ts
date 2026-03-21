@@ -7,9 +7,8 @@ import {
   updateCheckInRecord,
   findDepositByOrderId,
   createDeposit,
-  updateDeposit,
 } from '../db'
-import type { CheckInRecord, Deposit } from '../db'
+import type { CheckInRecord } from '../db'
 import { Errors } from '../middleware/error'
 
 export type PayChannel = 'alipay' | 'wechat'
@@ -19,18 +18,18 @@ export interface CreatePaymentResult {
   orderId: string
   amount: number // 分
   channel: PayChannel
+  orderStr?: string
 }
 
 // TODO: 后续从 rooms 表读取
-const DEPOSIT_AMOUNT = 50000 // 500 元
+export const DEPOSIT_AMOUNT = 50000 // 500 元
+export const ALIPAY_SUBJECT = 'AI小二押金'
 
-/**
- * 创建支付订单
- */
-export async function createPayment(
-  orderId: string,
-  channel: PayChannel
-): Promise<CreatePaymentResult> {
+export function generateTradeNO(orderId: string, prefix = 'AI'): string {
+  return `${prefix}${orderId}_${Date.now()}`
+}
+
+export async function getRecordForPayment(orderId: string) {
   const record = await findRecordByOrderId(orderId)
   if (!record) {
     throw Errors.notFound('未找到入住记录')
@@ -42,12 +41,55 @@ export async function createPayment(
     throw Errors.conflict('押金已支付')
   }
 
-  // TODO: 调用收钱吧 API 创建预订单
-  // const result = await shouqianba.precreate({ amount, channel, orderId })
-  // return { tradeNO: result.tradeNO, ... }
+  return record
+}
 
-  // Mock
+interface PersistOptions {
+  record?: CheckInRecord
+  orderStr?: string
+}
+
+/**
+ * Mock 支付（保留旧实现，方便联调/演示）
+ */
+export async function createPaymentMock(
+  orderId: string,
+  channel: PayChannel
+): Promise<CreatePaymentResult> {
+  const record = await getRecordForPayment(orderId)
   const tradeNO = `MOCK_${channel}_${Date.now()}`
+
+  const depositId = await createDeposit({
+    orderId,
+    amount: DEPOSIT_AMOUNT,
+    channel,
+    status: 'created',
+    tradeNO,
+  })
+
+  await updateCheckInRecord(orderId, { depositId })
+
+  console.log(
+    `[Deposit] [Mock] 创建支付订单: orderId=${orderId}, channel=${channel}, tradeNO=${tradeNO}, room=${record.roomName}`
+  )
+
+  return { tradeNO, orderId, amount: DEPOSIT_AMOUNT, channel }
+}
+
+/**
+ * 创建真实支付订单（支付宝）- 仅负责持久化
+ */
+export async function createPayment(
+  orderId: string,
+  channel: PayChannel,
+  tradeNO: string,
+  options: PersistOptions = {}
+): Promise<CreatePaymentResult> {
+  if (channel !== 'alipay') {
+    throw Errors.badRequest('当前仅支持支付宝支付')
+  }
+
+  const record = options.record ?? (await getRecordForPayment(orderId))
 
   // 创建押金记录
   const depositId = await createDeposit({
@@ -61,59 +103,16 @@ export async function createPayment(
   // 关联到入住记录
   await updateCheckInRecord(orderId, { depositId })
 
-  console.log(`[Deposit] 创建支付订单: orderId=${orderId}, channel=${channel}, tradeNO=${tradeNO}`)
-
-  return { tradeNO, orderId, amount: DEPOSIT_AMOUNT, channel }
-}
-
-/**
- * 确认支付成功
- * 真实环境由收钱吧回调触发，mock 环境前端直接调用
- */
-export async function confirmPayment(
-  orderId: string,
-  transactionId: string
-): Promise<{ checkin: CheckInRecord; deposit: Deposit }> {
-  const record = await findRecordByOrderId(orderId)
-  if (!record) {
-    throw Errors.notFound('未找到入住记录')
-  }
-  const deposit = await findDepositByOrderId(orderId)
-  if (!deposit) {
-    throw Errors.notFound('未找到押金记录')
-  }
-  if (deposit.status === 'paid') {
-    throw Errors.conflict('押金已支付')
-  }
-
-  // 更新押金记录
-  await updateDeposit(orderId, {
-    status: 'paid',
-    transactionId,
-    paidAt: new Date(),
-  })
-
-  // 更新入住记录
-  await updateCheckInRecord(orderId, {
-    depositPaid: true,
-    status: 'checked_in',
-  })
-
-  console.log(`[Deposit] 支付确认: orderId=${orderId}, transactionId=${transactionId}`)
+  console.log(
+    `[Deposit] 创建支付订单: orderId=${orderId}, channel=${channel}, tradeNO=${tradeNO}, room=${record.roomName}`
+  )
 
   return {
-    checkin: {
-      ...record,
-      depositPaid: true,
-      status: 'checked_in',
-      updatedAt: new Date(),
-    },
-    deposit: {
-      ...deposit,
-      status: 'paid',
-      transactionId,
-      paidAt: new Date(),
-      updatedAt: new Date(),
-    },
+    tradeNO,
+    orderId,
+    amount: DEPOSIT_AMOUNT,
+    channel,
+    ...(options.orderStr ? { orderStr: options.orderStr } : {}),
   }
 }
+

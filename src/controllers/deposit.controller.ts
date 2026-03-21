@@ -1,6 +1,14 @@
 import { Request, Response } from 'express'
 import { asyncHandler, Errors } from '../middleware/error'
-import { createPayment, confirmPayment, PayChannel } from '../services/deposit.service'
+import {
+  ALIPAY_SUBJECT,
+  DEPOSIT_AMOUNT,
+  createPayment,
+  generateTradeNO,
+  PayChannel,
+  getRecordForPayment,
+} from '../services/deposit.service'
+import { createAppPayOrder } from '../services/alipay.service'
 
 // POST /api/deposit/create - 创建支付订单
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -10,25 +18,23 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
     throw Errors.badRequest('缺少 orderId')
   }
 
-  const validChannels: PayChannel[] = ['alipay', 'wechat']
+  const validChannels: PayChannel[] = ['alipay']
   if (channel && !validChannels.includes(channel)) {
-    throw Errors.badRequest('无效的支付渠道')
+    throw Errors.badRequest('当前仅支持支付宝支付')
   }
 
-  const result = await createPayment(orderId, channel || 'alipay')
+  const paymentChannel: PayChannel = (channel as PayChannel) || 'alipay'
+
+  const record = await getRecordForPayment(orderId)
+  const tradeNO = generateTradeNO(orderId)
+  const orderStr = await createAppPayOrder({
+    outTradeNo: tradeNO,
+    subject: ALIPAY_SUBJECT,
+    totalAmountCents: DEPOSIT_AMOUNT,
+    body: `${record.roomName} 押金`,
+  })
+
+  const result = await createPayment(orderId, paymentChannel, tradeNO, { record, orderStr })
 
   res.json({ success: true, data: result })
-})
-
-// POST /api/deposit/confirm - 确认支付（mock 用，真实环境由回调触发）
-export const confirm = asyncHandler(async (req: Request, res: Response) => {
-  const { orderId, transactionId } = req.body
-
-  if (!orderId || !transactionId) {
-    throw Errors.badRequest('缺少 orderId 或 transactionId')
-  }
-
-  const record = await confirmPayment(orderId, transactionId)
-
-  res.json({ success: true, data: record })
 })

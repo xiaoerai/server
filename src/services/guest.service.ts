@@ -2,7 +2,13 @@
  * 住客服务
  */
 
-import { createGuest as dbCreateGuest, findGuestByIdNumber, findGuestsByIds, addGuestIdToRecord, Guest } from '../db'
+import {
+  createGuest as dbCreateGuest,
+  findGuestByIdNumber,
+  findGuestsByIds,
+  addGuestIdToRecord,
+  Guest,
+} from '../db'
 
 export interface GuestInput {
   name: string
