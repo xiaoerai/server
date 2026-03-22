@@ -8,6 +8,7 @@ import {
   PayChannel,
   getRecordForPayment,
   handleAlipayNotify,
+  getDepositStatus,
 } from '../services/deposit.service'
 import { createAppPayOrder, verifyAlipayNotify } from '../services/alipay.service'
 
@@ -55,4 +56,16 @@ export const notify = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res.send('success')
+})
+
+// GET /api/deposit/:orderId/status - 查询押金状态
+export const status = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId } = req.params
+
+  const result = await getDepositStatus(orderId)
+  if (!result) {
+    throw Errors.notFound('未找到押金记录')
+  }
+
+  res.json({ success: true, data: result })
 })

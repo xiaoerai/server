@@ -9,7 +9,7 @@ import {
   createDeposit,
   updateDeposit,
 } from '../db'
-import type { CheckInRecord } from '../db'
+import type { CheckInRecord, Deposit } from '../db'
 import { Errors } from '../middleware/error'
 
 export type PayChannel = 'alipay' | 'wechat'
@@ -139,4 +139,19 @@ export async function handleAlipayNotify(outTradeNo: string, tradeNo: string): P
   })
 
   console.log(`[Deposit] 支付宝回调确认: orderId=${orderId}, tradeNo=${tradeNo}`)
+}
+
+/**
+ * 查询押金状态
+ */
+export async function getDepositStatus(
+  orderId: string
+): Promise<{ status: Deposit['status']; paidAt?: Date } | null> {
+  const deposit = await findDepositByOrderId(orderId)
+  if (!deposit) return null
+
+  return {
+    status: deposit.status,
+    ...(deposit.paidAt ? { paidAt: deposit.paidAt } : {}),
+  }
 }

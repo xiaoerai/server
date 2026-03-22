@@ -1,5 +1,5 @@
 import express from 'express'
-import { create, notify } from '../controllers/deposit.controller'
+import { create, notify, status } from '../controllers/deposit.controller'
 
 const router = express.Router()
 
@@ -8,5 +8,8 @@ router.post('/create', create)
 
 // POST /api/deposit/notify - 支付宝异步回调
 router.post('/notify', notify)
+
+// GET /api/deposit/:orderId/status - 查询押金状态
+router.get('/:orderId/status', status)
 
 export default router
