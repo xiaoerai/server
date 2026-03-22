@@ -47,3 +47,15 @@ export async function createAppPayOrder(params: CreateAppPayOrderParams): Promis
 
   return alipayClient.sdkExecute('alipay.trade.app.pay', bizParams)
 }
+
+/**
+ * 验证支付宝异步通知签名
+ */
+export function verifyAlipayNotify(params: Record<string, string>): boolean {
+  if (!alipayClient) return false
+  try {
+    return alipayClient.checkNotifySign(params)
+  } catch {
+    return false
+  }
+}

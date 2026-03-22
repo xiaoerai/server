@@ -7,6 +7,7 @@ import {
   updateCheckInRecord,
   findDepositByOrderId,
   createDeposit,
+  updateDeposit,
 } from '../db'
 import type { CheckInRecord } from '../db'
 import { Errors } from '../middleware/error'
@@ -116,3 +117,26 @@ export async function createPayment(
   }
 }
 
+/**
+ * 处理支付宝异步通知，更新押金状态
+ * out_trade_no 格式：AI{orderId}_{timestamp}
+ */
+export async function handleAlipayNotify(outTradeNo: string, tradeNo: string): Promise<void> {
+  const orderId = outTradeNo.replace(/^AI/, '').replace(/_\d+$/, '')
+
+  const deposit = await findDepositByOrderId(orderId)
+  if (!deposit || deposit.status === 'paid') return
+
+  await updateDeposit(orderId, {
+    status: 'paid',
+    transactionId: tradeNo,
+    paidAt: new Date(),
+  })
+
+  await updateCheckInRecord(orderId, {
+    depositPaid: true,
+    status: 'checked_in',
+  })
+
+  console.log(`[Deposit] 支付宝回调确认: orderId=${orderId}, tradeNo=${tradeNo}`)
+}
