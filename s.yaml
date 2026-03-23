@@ -17,6 +17,17 @@ resources:
       environmentVariables:
         NODE_ENV: production
         PORT: '9000'
+        TCB_ENV_ID: ${env('TCB_ENV_ID')}
+        TCB_SECRET_ID: ${env('TCB_SECRET_ID')}
+        TCB_SECRET_KEY: ${env('TCB_SECRET_KEY')}
+        ALIPAY_APP_ID: ${env('ALIPAY_APP_ID')}
+        ALIPAY_PRIVATE_KEY: ${env('ALIPAY_PRIVATE_KEY')}
+        ALIPAY_PUBLIC_KEY: ${env('ALIPAY_PUBLIC_KEY')}
+        ALIPAY_NOTIFY_URL: ${env('ALIPAY_NOTIFY_URL')}
+        HOSTEX_SESSION: ${env('HOSTEX_SESSION')}
+        HOSTEX_OPERATOR_ID: ${env('HOSTEX_OPERATOR_ID')}
+        JWT_SECRET: ${env('JWT_SECRET')}
+        JWT_EXPIRES_IN: 7d
       code: ./
       customRuntimeConfig:
         command:

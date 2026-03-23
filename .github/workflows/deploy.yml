@@ -8,6 +8,17 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      TCB_ENV_ID: ${{ secrets.TCB_ENV_ID }}
+      TCB_SECRET_ID: ${{ secrets.TCB_SECRET_ID }}
+      TCB_SECRET_KEY: ${{ secrets.TCB_SECRET_KEY }}
+      ALIPAY_APP_ID: ${{ secrets.ALIPAY_APP_ID }}
+      ALIPAY_PRIVATE_KEY: ${{ secrets.ALIPAY_PRIVATE_KEY }}
+      ALIPAY_PUBLIC_KEY: ${{ secrets.ALIPAY_PUBLIC_KEY }}
+      ALIPAY_NOTIFY_URL: ${{ secrets.ALIPAY_NOTIFY_URL }}
+      HOSTEX_SESSION: ${{ secrets.HOSTEX_SESSION }}
+      HOSTEX_OPERATOR_ID: ${{ secrets.HOSTEX_OPERATOR_ID }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

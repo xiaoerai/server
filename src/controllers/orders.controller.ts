@@ -8,14 +8,14 @@ const MOCK_ORDERS = [
   {
     orderId: 'MOCK_ORD_001',
     roomName: '301 豪华大床房',
-    checkInDate: '2026-03-18',
-    checkOutDate: '2026-03-20',
+    checkInDate: '2026-03-23',
+    checkOutDate: '2026-03-25',
   },
   {
     orderId: 'MOCK_ORD_002',
     roomName: '502 海景双床房',
-    checkInDate: '2026-03-19',
-    checkOutDate: '2026-03-22',
+    checkInDate: '2026-03-24',
+    checkOutDate: '2026-03-27',
   },
 ]
 
