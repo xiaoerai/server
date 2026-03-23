@@ -1,0 +1,10 @@
+src/
+node_modules/.cache
+.env
+.env.*
+.git
+.github
+*.ts
+tsconfig.json
+eslint.config.mjs
+.prettierrc

@@ -1,0 +1,35 @@
+edition: 3.0.0
+name: xiaoer-server
+access: default
+
+resources:
+  server:
+    component: fc3
+    props:
+      region: cn-shanghai
+      functionName: xiaoer-server
+      runtime: custom.debian10
+      handler: index.handler
+      timeout: 30
+      memorySize: 512
+      layers:
+        - acs:fc:cn-shanghai:official:layers/Nodejs18/versions/1
+      environmentVariables:
+        NODE_ENV: production
+        PORT: '9000'
+      code: ./
+      customRuntimeConfig:
+        command:
+          - /var/fc/lang/nodejs18/bin/node
+          - dist/index.js
+        port: 9000
+      triggers:
+        - triggerName: http
+          triggerType: http
+          triggerConfig:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
