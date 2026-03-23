@@ -23,7 +23,7 @@ export interface CreatePaymentResult {
 }
 
 // TODO: 后续从 rooms 表读取
-export const DEPOSIT_AMOUNT = 50000 // 500 元
+export const DEPOSIT_AMOUNT = 1 // 0.01 元（测试用，正式改回 50000）
 export const ALIPAY_SUBJECT = 'AI小二押金'
 
 export function generateTradeNO(orderId: string, prefix = 'AI'): string {
