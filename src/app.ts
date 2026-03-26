@@ -9,6 +9,7 @@ const app: Express = express()
 // 中间件
 app.use(cors())
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.use(logger)
 
 // 路由

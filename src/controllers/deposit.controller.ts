@@ -53,15 +53,19 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/deposit/notify - 支付宝异步回调
 export const notify = asyncHandler(async (req: Request, res: Response) => {
   const params = req.body
+  console.log('[Notify] 收到支付宝回调:', JSON.stringify(params))
 
   const isValid = verifyAlipayNotify(params)
+  console.log('[Notify] 签名验证:', isValid)
   if (!isValid) {
     res.status(400).send('fail')
     return
   }
 
+  console.log('[Notify] trade_status:', params.trade_status, 'out_trade_no:', params.out_trade_no)
   if (params.trade_status === 'TRADE_SUCCESS' || params.trade_status === 'TRADE_FINISHED') {
     await handleAlipayNotify(params.out_trade_no, params.trade_no)
+    console.log('[Notify] 押金状态已更新')
   }
 
   res.send('success')
