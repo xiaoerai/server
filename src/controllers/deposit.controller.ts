@@ -10,7 +10,7 @@ import {
   handleAlipayNotify,
   getDepositStatus,
 } from '../services/deposit.service'
-import { createAppPayOrder, verifyAlipayNotify } from '../services/alipay.service'
+import { createTrade, verifyAlipayNotify } from '../services/alipay.service'
 
 // POST /api/deposit/create - 创建支付订单
 export const create = asyncHandler(async (req: Request, res: Response) => {
@@ -29,16 +29,24 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
   const record = await getRecordForPayment(orderId)
   const tradeNO = generateTradeNO(orderId)
-  const orderStr = await createAppPayOrder({
+  const buyerId = req.user?.alipayUserId
+  if (!buyerId) {
+    throw Errors.badRequest('未获取到支付宝用户ID，请重新登录')
+  }
+
+  const alipayTradeNo = await createTrade({
     outTradeNo: tradeNO,
     subject: ALIPAY_SUBJECT,
     totalAmountCents: DEPOSIT_AMOUNT,
+    buyerId,
     body: `${record.roomName} 押金`,
   })
 
-  const result = await createPayment(orderId, paymentChannel, tradeNO, { record, orderStr })
+  const result = await createPayment(orderId, paymentChannel, tradeNO, {
+    record,
+  })
 
-  res.json({ success: true, data: result })
+  res.json({ success: true, data: { ...result, tradeNO: alipayTradeNo } })
 })
 
 // POST /api/deposit/notify - 支付宝异步回调

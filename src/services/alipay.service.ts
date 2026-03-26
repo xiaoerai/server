@@ -20,32 +20,58 @@ const alipayClient =
       })
     : null
 
-export interface CreateAppPayOrderParams {
+/**
+ * 用授权码换取支付宝 user_id
+ */
+export async function getAlipayUserId(authCode: string): Promise<string> {
+  if (!alipayClient) {
+    throw Errors.internal('支付宝未配置')
+  }
+
+  const result = await alipayClient.exec('alipay.system.oauth.token', {
+    grantType: 'authorization_code',
+    code: authCode,
+  })
+
+  if (!result.userId) {
+    throw Errors.internal(`获取支付宝用户ID失败: ${result.subMsg || result.msg}`)
+  }
+
+  return result.userId
+}
+
+export interface CreateTradeParams {
   outTradeNo: string
   subject: string
   totalAmountCents: number
+  buyerId?: string
   body?: string
 }
 
-export async function createAppPayOrder(params: CreateAppPayOrderParams): Promise<string> {
+export async function createTrade(params: CreateTradeParams): Promise<string> {
   if (!alipayClient) {
     throw Errors.internal('支付宝支付未配置')
   }
 
   const amountYuan = (params.totalAmountCents / 100).toFixed(2)
 
-  const bizParams = {
+  const result = await alipayClient.exec('alipay.trade.create', {
     bizContent: {
       out_trade_no: params.outTradeNo,
       total_amount: amountYuan,
       subject: params.subject,
-      product_code: 'QUICK_MSECURITY_PAY',
+      product_code: 'JSAPI_PAY',
       ...(params.body ? { body: params.body } : {}),
+      ...(params.buyerId ? { buyer_id: params.buyerId } : {}),
     },
     ...(ALIPAY_NOTIFY_URL ? { notifyUrl: ALIPAY_NOTIFY_URL } : {}),
+  })
+
+  if (!result.tradeNo) {
+    throw Errors.internal(`支付宝下单失败: ${result.subMsg || result.msg}`)
   }
 
-  return alipayClient.sdkExecute('alipay.trade.app.pay', bizParams)
+  return result.tradeNo
 }
 
 /**

@@ -28,6 +28,11 @@ resources:
         HOSTEX_OPERATOR_ID: ${env('HOSTEX_OPERATOR_ID')}
         JWT_SECRET: ${env('JWT_SECRET')}
         JWT_EXPIRES_IN: 7d
+      logConfig:
+        project: xiaoer-logs
+        logstore: fc-logs
+        enableRequestMetrics: true
+        enableInstanceMetrics: true
       code: ./
       customRuntimeConfig:
         command:

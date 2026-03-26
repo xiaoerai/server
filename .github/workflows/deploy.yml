@@ -49,4 +49,4 @@ jobs:
         run: s config add --AccessKeyID ${{ secrets.ALIYUN_ACCESS_KEY_ID }} --AccessKeySecret ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }} -a default --force
 
       - name: Deploy
-        run: s deploy --yes
+        run: s deploy -y
