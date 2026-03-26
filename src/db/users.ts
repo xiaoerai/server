@@ -2,9 +2,7 @@ import { db } from './client'
 
 export interface User {
   _id?: string
-  openid?: string
   phone: string
-  alipayUserId?: string
   guestIds?: string[] // 关联的住客ID列表（按最近使用排序）
   createdAt: Date
   lastLoginAt: Date
@@ -20,23 +18,18 @@ export async function findUserByPhone(phone: string): Promise<User | null> {
   return (data[0] as User) || null
 }
 
-export async function createUser(
-  phone: string,
-  platformId: { openid?: string; alipayUserId?: string }
-): Promise<void> {
+export async function createUser(phone: string): Promise<void> {
   const now = new Date()
   await db.collection('users').add({
     phone,
-    ...platformId,
     createdAt: now,
     lastLoginAt: now,
   })
 }
 
-export async function updateUserLogin(phone: string, platformId?: { openid?: string; alipayUserId?: string }): Promise<void> {
+export async function updateUserLogin(phone: string): Promise<void> {
   await db.collection('users').where({ phone }).update({
     lastLoginAt: new Date(),
-    ...platformId,
   })
 }
 

@@ -6,6 +6,7 @@ export interface Deposit {
   amount: number // 金额（分）
   channel: 'alipay' | 'wechat' // 支付渠道
   status: 'created' | 'paid' | 'refunded' // 支付状态
+  payerUserId?: string // 支付者平台用户ID（退款时使用）
   tradeNO?: string // 收钱吧/支付宝交易号
   transactionId?: string // 支付回调的交易流水号
   paidAt?: Date // 支付时间

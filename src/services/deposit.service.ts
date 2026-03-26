@@ -48,6 +48,7 @@ export async function getRecordForPayment(orderId: string) {
 interface PersistOptions {
   record?: CheckInRecord
   orderStr?: string
+  payerUserId?: string
 }
 
 /**
@@ -99,6 +100,7 @@ export async function createPayment(
     channel,
     status: 'created',
     tradeNO,
+    ...(options.payerUserId ? { payerUserId: options.payerUserId } : {}),
   })
 
   // 关联到入住记录

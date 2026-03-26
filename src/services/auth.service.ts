@@ -79,19 +79,18 @@ export async function loginWithSmsCode(
     console.log(`[Auth] 测试手机号登录，跳过验证码 (phone: ${phone})`)
   }
 
-  // 根据平台获取用户标识
+  // 根据平台获取用户标识（只存 JWT，不存数据库）
   const platformId = await getPlatformId(platform, authCode)
 
-  // 3. 查找或创建用户（以 phone 为跨端唯一标识）
+  // 3. 查找或创建用户（用户表只存 phone）
   const user = await findUserByPhone(phone)
   if (!user) {
-    await createUser(phone, platformId)
+    await createUser(phone)
   } else {
-    // 更新登录时间，同时补充平台 ID（用户可能从新平台登录）
-    await updateUserLogin(phone, platformId)
+    await updateUserLogin(phone)
   }
 
-  // 4. 生成 JWT
+  // 4. 生成 JWT（包含平台用户ID，支付时使用）
   const token = signToken({ phone, ...platformId })
 
   // 5. 登录成功，删除验证码

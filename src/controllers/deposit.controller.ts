@@ -44,6 +44,7 @@ export const create = asyncHandler(async (req: Request, res: Response) => {
 
   const result = await createPayment(orderId, paymentChannel, tradeNO, {
     record,
+    payerUserId: buyerId,
   })
 
   res.json({ success: true, data: { ...result, tradeNO: alipayTradeNo } })
