@@ -165,3 +165,43 @@ export async function getDepositStatus(
     ...(deposit.paidAt ? { paidAt: deposit.paidAt } : {}),
   }
 }
+
+/**
+ * 退款
+ */
+export async function refundDeposit(
+  orderId: string,
+  refundAmountCents: number
+): Promise<void> {
+  const deposit = await findDepositByOrderId(orderId)
+  if (!deposit) {
+    throw Errors.notFound('未找到押金记录')
+  }
+
+  if (deposit.status !== 'paid') {
+    throw Errors.badRequest('押金未支付，无法退款')
+  }
+
+  if (!deposit.transactionId) {
+    throw Errors.badRequest('缺少支付宝交易号，无法退款')
+  }
+
+  if (refundAmountCents > deposit.amount) {
+    throw Errors.badRequest('退款金额不能超过押金金额')
+  }
+
+  // 调支付宝退款
+  const { refundTrade } = await import('./alipay.service')
+  await refundTrade({
+    tradeNo: deposit.transactionId,
+    refundAmountCents,
+  })
+
+  // 更新押金状态
+  await updateDeposit(orderId, {
+    status: 'refunded',
+    refundedAt: new Date(),
+  })
+
+  console.log(`[Deposit] 退款成功: orderId=${orderId}, amount=${refundAmountCents}分`)
+}

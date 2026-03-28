@@ -9,6 +9,7 @@ import {
   getRecordForPayment,
   handleAlipayNotify,
   getDepositStatus,
+  refundDeposit,
 } from '../services/deposit.service'
 import { createTrade, verifyAlipayNotify } from '../services/alipay.service'
 
@@ -81,4 +82,21 @@ export const status = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res.json({ success: true, data: result })
+})
+
+// POST /api/deposit/refund - 退款
+export const refund = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId, amount } = req.body
+
+  if (!orderId) {
+    throw Errors.badRequest('缺少 orderId')
+  }
+
+  if (!amount || amount <= 0) {
+    throw Errors.badRequest('退款金额无效')
+  }
+
+  await refundDeposit(orderId, amount)
+
+  res.json({ success: true })
 })

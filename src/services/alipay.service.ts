@@ -74,6 +74,37 @@ export async function createTrade(params: CreateTradeParams): Promise<string> {
   return result.tradeNo
 }
 
+export interface RefundParams {
+  tradeNo: string // 支付宝交易号
+  refundAmountCents: number // 退款金额（分）
+  refundReason?: string
+}
+
+/**
+ * 支付宝退款
+ */
+export async function refundTrade(params: RefundParams): Promise<void> {
+  if (!alipayClient) {
+    throw Errors.internal('支付宝未配置')
+  }
+
+  const amountYuan = (params.refundAmountCents / 100).toFixed(2)
+
+  const result = await alipayClient.exec('alipay.trade.refund', {
+    bizContent: {
+      trade_no: params.tradeNo,
+      refund_amount: amountYuan,
+      refund_reason: params.refundReason || '押金退还',
+    },
+  })
+
+  if (result.code !== '10000') {
+    throw Errors.internal(`支付宝退款失败: ${result.subMsg || result.msg}`)
+  }
+
+  console.log(`[Alipay] 退款成功: tradeNo=${params.tradeNo}, amount=${amountYuan}`)
+}
+
 /**
  * 验证支付宝异步通知签名
  */
