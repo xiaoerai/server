@@ -5,6 +5,7 @@ import ordersRouter from './orders'
 import checkinRouter from './checkin'
 import depositRouter from './deposit'
 import userRouter from './user'
+import roomsRouter from './rooms'
 
 const router = express.Router()
 
@@ -24,7 +25,7 @@ router.use('/deposit', depositRouter)
 // 用户
 router.use('/user', userRouter)
 
-// TODO: 添加其他路由
-// router.use('/checkout', checkoutRouter)
+// 房间
+router.use('/rooms', roomsRouter)
 
 export default router

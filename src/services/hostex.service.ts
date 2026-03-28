@@ -228,3 +228,89 @@ export async function checkHostexSession(credentials: HostexCredentials): Promis
     return false
   }
 }
+
+// Hostex 房间列表返回结构
+interface HostexRoom {
+  id: number
+  house_title: string
+  house_type: {
+    house_type_id: number
+    title: string
+  }
+  checkin_guide: {
+    address_info: string | null
+    lock_info: string | null
+    wifi_info: string | null
+    guide_url: string | null
+  }
+}
+
+interface HostexRoomResponse {
+  error_code: number
+  error_msg: string
+  data: {
+    list: HostexRoom[]
+    total: number
+  }
+}
+
+/**
+ * 从百居易获取房间列表
+ */
+export async function fetchRoomsFromHostex(credentials: HostexCredentials): Promise<HostexRoom[]> {
+  const { session, operatorId } = credentials
+
+  const url = new URL(`${HOSTEX_BASE_URL}/house/search`)
+  url.searchParams.set('page', '1')
+  url.searchParams.set('page_size', '100')
+  url.searchParams.set('opid', operatorId)
+  url.searchParams.set('opclient', 'Web-Mac-Chrome')
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      accept: 'application/json, text/plain, */*',
+      cookie: `hostex_session=${session}; operator_id=${operatorId}`,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Hostex HTTP error: ${response.status}`)
+  }
+
+  const result = (await response.json()) as HostexRoomResponse
+
+  if (result.error_code !== 0) {
+    throw new Error(`Hostex API error: [${result.error_code}] ${result.error_msg}`)
+  }
+
+  console.log(`[Hostex] 获取到 ${result.data.list.length} 个房间`)
+
+  return result.data.list
+}
+
+/**
+ * 解析房间号（从 "301 轻旅｜投影大床房" 提取 "301"）
+ */
+function parseRoomNumber(houseTitle: string): string {
+  const match = houseTitle.match(/^(\d+)/)
+  return match ? match[1] : houseTitle
+}
+
+export interface SyncRoomData {
+  hostexHouseId: number
+  roomNumber: string
+  roomName: string
+}
+
+/**
+ * 获取格式化的房间列表（用于同步到本地）
+ */
+export async function fetchRoomList(credentials: HostexCredentials): Promise<SyncRoomData[]> {
+  const rooms = await fetchRoomsFromHostex(credentials)
+
+  return rooms.map((room) => ({
+    hostexHouseId: room.id,
+    roomNumber: parseRoomNumber(room.house_title),
+    roomName: room.house_title,
+  }))
+}
