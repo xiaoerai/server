@@ -24,6 +24,7 @@ interface HostexReservation {
   check_out: string
   staying_status: string
   house: HostexHouse
+  house_id: number
   guest: {
     name: string
     phone: string
@@ -33,6 +34,7 @@ interface HostexReservation {
 interface HostexOrder {
   code: string
   status: string
+  thirdparty_type: number
   create_time: string
   update_time: string
   client: HostexClient
@@ -48,6 +50,14 @@ interface HostexResponse {
   }
 }
 
+// OTA 平台映射
+const OTA_MAP: Record<number, string> = {
+  5: 'manual',
+  11: 'ctrip',
+  12: 'meituan',
+  22: 'douyin',
+}
+
 // 返回给前端的订单格式
 export interface Order {
   orderId: string
@@ -58,6 +68,9 @@ export interface Order {
   checkInDate: string
   checkOutDate: string
   status: string
+  source: string // OTA 来源
+  pms: string // PMS 平台
+  pmsRoomId: string // PMS 房间ID
 }
 
 // 筛选条件
@@ -155,6 +168,9 @@ function transformOrder(hostexOrder: HostexOrder): Order | null {
     checkInDate: formatDate(reservation.check_in),
     checkOutDate: formatDate(reservation.check_out),
     status: hostexOrder.status,
+    source: OTA_MAP[hostexOrder.thirdparty_type] || 'unknown',
+    pms: 'hostex',
+    pmsRoomId: String(reservation.house_id),
   }
 }
 

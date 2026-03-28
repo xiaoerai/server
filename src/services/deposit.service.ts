@@ -8,6 +8,7 @@ import {
   findDepositByOrderId,
   createDeposit,
   updateDeposit,
+  updateRoomStatus,
 } from '../db'
 import type { CheckInRecord, Deposit } from '../db'
 import { Errors } from '../middleware/error'
@@ -139,6 +140,13 @@ export async function handleAlipayNotify(outTradeNo: string, tradeNo: string): P
     depositPaid: true,
     status: 'checked_in',
   })
+
+  // 联动房间状态 → occupied
+  const record = await findRecordByOrderId(orderId)
+  if (record?.roomNumber) {
+    await updateRoomStatus(record.roomNumber, 'occupied')
+    console.log(`[Deposit] 房间 ${record.roomNumber} → occupied`)
+  }
 
   console.log(`[Deposit] 支付宝回调确认: orderId=${orderId}, tradeNo=${tradeNo}`)
 }

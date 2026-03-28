@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { asyncHandler } from '../middleware/error'
 import { fetchRoomList } from '../services/hostex.service'
-import { upsertRoom, findAllRooms } from '../db'
+import { upsertRoomByPms, findAllRooms } from '../db'
 
 // POST /api/rooms/sync - 从 Hostex 同步房间列表
 export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
@@ -13,14 +13,9 @@ export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
   const rooms = await fetchRoomList(credentials)
 
   for (const room of rooms) {
-    await upsertRoom(room.hostexHouseId, {
+    await upsertRoomByPms('hostex', String(room.hostexHouseId), {
       roomNumber: room.roomNumber,
       roomName: room.roomName,
-      doorCode: '',
-      wifiName: '',
-      wifiPassword: '',
-      deposit: 0,
-      status: 'available',
     })
   }
 

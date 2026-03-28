@@ -2,16 +2,25 @@
  * 入住服务
  */
 
-import { createCheckInRecord, findRecordByOrderId, updateCheckInRecord, CheckInRecord } from '../db'
+import {
+  createCheckInRecord,
+  findRecordByOrderId,
+  updateCheckInRecord,
+  CheckInRecord,
+  findRoomByPms,
+  updateRoomStatus,
+} from '../db'
 import { Errors } from '../middleware/error'
 
 export interface CreateCheckInParams {
   orderId: string
-  roomId: string
+  pmsRoomId: string
+  pms: string
   roomName: string
   phone: string
   checkInDate: string
   checkOutDate: string
+  source?: string
   guestIds?: string[]
 }
 
@@ -24,7 +33,7 @@ export interface UpdateCheckInParams {
  * 创建入住记录
  */
 export async function createCheckIn(params: CreateCheckInParams): Promise<CheckInRecord> {
-  const { orderId, roomId, roomName, phone, checkInDate, checkOutDate, guestIds = [] } = params
+  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, source, guestIds = [] } = params
 
   // 检查是否已存在
   const existing = await findRecordByOrderId(orderId)
@@ -32,13 +41,20 @@ export async function createCheckIn(params: CreateCheckInParams): Promise<CheckI
     throw Errors.conflict('该订单已办理入住')
   }
 
+  // 通过 PMS 映射查找房间号
+  const room = await findRoomByPms(pms, pmsRoomId)
+  if (!room) {
+    throw Errors.notFound(`未找到房间映射: ${pms}/${pmsRoomId}`)
+  }
+
   const record: Omit<CheckInRecord, '_id' | 'createdAt' | 'updatedAt'> = {
     hostexOrderId: orderId,
-    roomId,
+    roomNumber: room.roomNumber,
     roomName,
     phone,
     checkInDate,
     checkOutDate,
+    source,
     guestIds,
     depositPaid: false,
     status: 'pending',
@@ -46,7 +62,7 @@ export async function createCheckIn(params: CreateCheckInParams): Promise<CheckI
 
   const id = await createCheckInRecord(record)
 
-  console.log(`[CheckIn] 创建入住记录: ${orderId}, id=${id}`)
+  console.log(`[CheckIn] 创建入住记录: ${orderId}, room=${room.roomNumber}, id=${id}`)
 
   return { _id: id, ...record, createdAt: new Date(), updatedAt: new Date() }
 }
@@ -91,7 +107,10 @@ export async function checkout(orderId: string): Promise<CheckInRecord> {
 
   await updateCheckInRecord(orderId, { status: 'checked_out' })
 
-  console.log(`[CheckIn] 退房: ${orderId}`)
+  // 联动房间状态 → dirty
+  await updateRoomStatus(record.roomNumber, 'dirty')
+
+  console.log(`[CheckIn] 退房: ${orderId}, room=${record.roomNumber} → dirty`)
 
   return { ...record, status: 'checked_out', updatedAt: new Date() }
 }

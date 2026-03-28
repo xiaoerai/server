@@ -4,12 +4,13 @@ const _ = db.command
 
 export interface CheckInRecord {
   _id?: string
-  hostexOrderId: string // 百居易订单ID
-  roomId: string // 百居易房型ID
+  hostexOrderId: string // PMS 订单ID
+  roomNumber: string // 房间号（关联 rooms 表）
   roomName: string // 房间名称（冗余存储，方便显示）
   phone: string // 下单人手机号
   checkInDate: string // 入住日期
   checkOutDate: string // 退房日期
+  source?: string // OTA 来源（meituan / ctrip / douyin / manual）
 
   guestIds: string[] // 住客ID列表
 

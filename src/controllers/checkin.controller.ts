@@ -6,9 +6,9 @@ import { asyncHandler, Errors } from '../middleware/error'
 
 // 创建入住记录 + 主住客信息
 export const createCheckIn = asyncHandler(async (req: Request, res: Response) => {
-  const { orderId, roomId, roomName, phone, checkInDate, checkOutDate, guest } = req.body
+  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, guest, source } = req.body
 
-  if (!orderId || !roomId || !roomName || !phone || !checkInDate || !checkOutDate) {
+  if (!orderId || !pmsRoomId || !pms || !roomName || !phone || !checkInDate || !checkOutDate) {
     throw Errors.badRequest('缺少必要参数')
   }
 
@@ -22,11 +22,13 @@ export const createCheckIn = asyncHandler(async (req: Request, res: Response) =>
   // 2. 创建入住记录（直接带上 guestId）
   const record = await checkinService.createCheckIn({
     orderId,
-    roomId,
+    pmsRoomId,
+    pms,
     roomName,
     phone,
     checkInDate,
     checkOutDate,
+    source,
     guestIds: [guestId],
   })
 
