@@ -68,7 +68,7 @@ export interface Order {
   checkInDate: string
   checkOutDate: string
   status: string
-  source: string // OTA 来源
+  ota: string // OTA 来源
   pms: string // PMS 平台
   pmsRoomId: string // PMS 房间ID
 }
@@ -168,7 +168,7 @@ function transformOrder(hostexOrder: HostexOrder): Order | null {
     checkInDate: formatDate(reservation.check_in),
     checkOutDate: formatDate(reservation.check_out),
     status: hostexOrder.status,
-    source: OTA_MAP[hostexOrder.thirdparty_type] || 'unknown',
+    ota: OTA_MAP[hostexOrder.thirdparty_type] || 'unknown',
     pms: 'hostex',
     pmsRoomId: String(reservation.house_id),
   }

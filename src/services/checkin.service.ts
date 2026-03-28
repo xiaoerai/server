@@ -20,7 +20,7 @@ export interface CreateCheckInParams {
   phone: string
   checkInDate: string
   checkOutDate: string
-  source?: string
+  ota?: string
   guestIds?: string[]
 }
 
@@ -33,7 +33,7 @@ export interface UpdateCheckInParams {
  * 创建入住记录
  */
 export async function createCheckIn(params: CreateCheckInParams): Promise<CheckInRecord> {
-  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, source, guestIds = [] } = params
+  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, ota, guestIds = [] } = params
 
   // 检查是否已存在
   const existing = await findRecordByOrderId(orderId)
@@ -54,7 +54,7 @@ export async function createCheckIn(params: CreateCheckInParams): Promise<CheckI
     phone,
     checkInDate,
     checkOutDate,
-    source,
+    ota,
     guestIds,
     depositPaid: false,
     status: 'pending',

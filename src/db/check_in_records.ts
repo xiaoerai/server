@@ -10,7 +10,7 @@ export interface CheckInRecord {
   phone: string // 下单人手机号
   checkInDate: string // 入住日期
   checkOutDate: string // 退房日期
-  source?: string // OTA 来源（meituan / ctrip / douyin / manual）
+  ota?: string // OTA 来源（meituan / ctrip / douyin / manual）
 
   guestIds: string[] // 住客ID列表
 

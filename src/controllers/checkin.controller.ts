@@ -6,7 +6,7 @@ import { asyncHandler, Errors } from '../middleware/error'
 
 // 创建入住记录 + 主住客信息
 export const createCheckIn = asyncHandler(async (req: Request, res: Response) => {
-  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, guest, source } = req.body
+  const { orderId, pmsRoomId, pms, roomName, phone, checkInDate, checkOutDate, guest, ota } = req.body
 
   if (!orderId || !pmsRoomId || !pms || !roomName || !phone || !checkInDate || !checkOutDate) {
     throw Errors.badRequest('缺少必要参数')
@@ -28,7 +28,7 @@ export const createCheckIn = asyncHandler(async (req: Request, res: Response) =>
     phone,
     checkInDate,
     checkOutDate,
-    source,
+    ota,
     guestIds: [guestId],
   })
 
