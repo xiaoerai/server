@@ -58,3 +58,16 @@ export const updateCheckIn = asyncHandler(async (req: Request, res: Response) =>
 
   res.json({ success: true })
 })
+
+// 退房
+export const checkOut = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId } = req.body
+
+  if (!orderId) {
+    throw Errors.badRequest('缺少 orderId')
+  }
+
+  const record = await checkinService.checkout(orderId)
+
+  res.json({ success: true, data: record })
+})
