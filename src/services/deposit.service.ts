@@ -134,7 +134,7 @@ export async function handleAlipayNotify(outTradeNo: string, tradeNo: string): P
     status: 'paid',
     transactionId: tradeNo,
     paidAt: new Date(),
-  })
+  }, 'created')
 
   await updateCheckInRecord(orderId, {
     depositPaid: true,
@@ -201,7 +201,7 @@ export async function refundDeposit(
   await updateDeposit(orderId, {
     status: 'refunded',
     refundedAt: new Date(),
-  })
+  }, 'paid')
 
   console.log(`[Deposit] 退款成功: orderId=${orderId}, amount=${refundAmountCents}分`)
 }

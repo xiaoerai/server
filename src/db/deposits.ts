@@ -36,12 +36,17 @@ export async function createDeposit(
   return id as string
 }
 
-// 更新押金状态
+// 更新押金状态（按 orderId + 当前状态匹配）
 export async function updateDeposit(
   orderId: string,
-  updates: Partial<Pick<Deposit, 'status' | 'transactionId' | 'paidAt' | 'refundedAt'>>
+  updates: Partial<Pick<Deposit, 'status' | 'transactionId' | 'paidAt' | 'refundedAt'>>,
+  currentStatus?: Deposit['status']
 ): Promise<void> {
-  await collection.where({ orderId, status: 'created' }).update({
+  const where: Record<string, unknown> = { orderId }
+  if (currentStatus) {
+    where.status = currentStatus
+  }
+  await collection.where(where).update({
     ...updates,
     updatedAt: new Date(),
   })
