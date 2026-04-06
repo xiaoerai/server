@@ -118,6 +118,25 @@ export async function updateRecordStatus(
   })
 }
 
+// 根据房间号查找当前入住记录（status = checked_in）
+export async function findCheckedInRecordByRoomNumber(
+  roomNumber: string
+): Promise<CheckInRecord | null> {
+  const { data } = await collection.where({ roomNumber, status: 'checked_in' }).get()
+  return (data[0] as CheckInRecord) || null
+}
+
+// 批量根据房间号列表查找当前入住记录
+export async function findCheckedInRecordsByRoomNumbers(
+  roomNumbers: string[]
+): Promise<CheckInRecord[]> {
+  if (roomNumbers.length === 0) return []
+  const { data } = await collection
+    .where({ roomNumber: _.in(roomNumbers), status: 'checked_in' })
+    .get()
+  return data as CheckInRecord[]
+}
+
 // 添加住客ID到记录
 export async function addGuestIdToRecord(recordId: string, guestId: string): Promise<void> {
   await collection.doc(recordId).update({

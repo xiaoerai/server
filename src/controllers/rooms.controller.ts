@@ -1,7 +1,13 @@
 import { Request, Response } from 'express'
 import { asyncHandler, Errors } from '../middleware/error'
 import { fetchRoomList } from '../services/hostex.service'
-import { upsertRoomByPms, findAllRooms, findRoomByNumber, updateRoomStatus } from '../db'
+import {
+  upsertRoomByPms,
+  findAllRooms,
+  findRoomByNumber,
+  updateRoomStatus,
+  findCheckedInRecordsByRoomNumbers,
+} from '../db'
 
 // POST /api/rooms/sync - 从 Hostex 同步房间列表
 export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
@@ -24,10 +30,33 @@ export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ success: true, data: { synced: rooms.length } })
 })
 
-// GET /api/rooms - 获取所有房间
+// GET /api/rooms - 获取所有房间（occupied 房间附带当前住客信息）
 export const getRooms = asyncHandler(async (_req: Request, res: Response) => {
   const rooms = await findAllRooms()
-  res.json({ success: true, data: rooms })
+
+  // 找出所有 occupied 房间的房间号
+  const occupiedRoomNumbers = rooms.filter((r) => r.status === 'occupied').map((r) => r.roomNumber)
+
+  // 批量查询入住记录
+  const checkedInRecords = await findCheckedInRecordsByRoomNumbers(occupiedRoomNumbers)
+  const recordMap = new Map(checkedInRecords.map((r) => [r.roomNumber, r]))
+
+  // 组装返回数据
+  const data = rooms.map((room) => {
+    const record = recordMap.get(room.roomNumber)
+    return {
+      ...room,
+      currentGuest: record
+        ? {
+            phone: record.phone,
+            checkInDate: record.checkInDate,
+            checkOutDate: record.checkOutDate,
+          }
+        : null,
+    }
+  })
+
+  res.json({ success: true, data })
 })
 
 // PUT /api/rooms/:roomNumber/status - 修改房间状态
