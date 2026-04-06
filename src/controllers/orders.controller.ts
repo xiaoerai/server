@@ -4,20 +4,39 @@ import { asyncHandler, Errors } from '../middleware/error'
 
 // 模拟订单数据（测试用）
 const MOCK_PHONE = '15290500792'
-const MOCK_ORDERS = [
-  {
-    orderId: 'MOCK_ORD_001',
-    roomName: '301 豪华大床房',
-    checkInDate: '2026-03-23',
-    checkOutDate: '2026-03-25',
-  },
-  {
-    orderId: 'MOCK_ORD_002',
-    roomName: '502 海景双床房',
-    checkInDate: '2026-03-24',
-    checkOutDate: '2026-03-27',
-  },
-]
+
+function getMockOrders() {
+  const today = new Date()
+  const formatDate = (d: Date) => d.toISOString().split('T')[0]
+  const addDays = (d: Date, n: number) => {
+    const result = new Date(d)
+    result.setDate(result.getDate() + n)
+    return result
+  }
+
+  return [
+    {
+      orderId: 'MOCK_ORD_001',
+      roomName: '301 豪华大床房',
+      houseId: 12556371,
+      pms: 'hostex',
+      pmsRoomId: '12556371',
+      ota: 'manual',
+      checkInDate: formatDate(today),
+      checkOutDate: formatDate(addDays(today, 2)),
+    },
+    {
+      orderId: 'MOCK_ORD_002',
+      roomName: '502 海景双床房',
+      houseId: 12556372,
+      pms: 'hostex',
+      pmsRoomId: '12556372',
+      ota: 'meituan',
+      checkInDate: formatDate(addDays(today, 1)),
+      checkOutDate: formatDate(addDays(today, 4)),
+    },
+  ]
+}
 
 // GET /api/orders?phone=xxx
 export const getOrders = asyncHandler(async (req: Request, res: Response) => {
@@ -32,7 +51,7 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
     console.log(`[Orders] 返回模拟订单 (phone: ${phone})`)
     return res.json({
       success: true,
-      data: MOCK_ORDERS,
+      data: getMockOrders(),
     })
   }
 
