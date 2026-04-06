@@ -35,7 +35,9 @@ export function auth(req: Request, _res: Response, next: NextFunction) {
 
 // 管理员权限中间件（必须在 auth 之后使用）
 export function adminOnly(req: Request, _res: Response, next: NextFunction) {
-  if (!req.user || !ADMIN_PHONES.includes(req.user.phone)) {
+  const isAdminByPhone = req.user && ADMIN_PHONES.includes(req.user.phone)
+  const isAdminByRole = req.user?.role === 'admin'
+  if (!isAdminByPhone && !isAdminByRole) {
     return next(Errors.forbidden('无管理员权限'))
   }
   next()

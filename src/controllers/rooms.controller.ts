@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
-import { asyncHandler } from '../middleware/error'
+import { asyncHandler, Errors } from '../middleware/error'
 import { fetchRoomList } from '../services/hostex.service'
-import { upsertRoomByPms, findAllRooms } from '../db'
+import { upsertRoomByPms, findAllRooms, findRoomByNumber, updateRoomStatus } from '../db'
 
 // POST /api/rooms/sync - 从 Hostex 同步房间列表
 export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
@@ -28,4 +28,25 @@ export const syncRooms = asyncHandler(async (_req: Request, res: Response) => {
 export const getRooms = asyncHandler(async (_req: Request, res: Response) => {
   const rooms = await findAllRooms()
   res.json({ success: true, data: rooms })
+})
+
+// PUT /api/rooms/:roomNumber/status - 修改房间状态
+const VALID_STATUSES = ['available', 'occupied', 'dirty'] as const
+type RoomStatus = (typeof VALID_STATUSES)[number]
+
+export const updateStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { roomNumber } = req.params
+  const { status } = req.body as { status: RoomStatus }
+
+  if (!status || !VALID_STATUSES.includes(status)) {
+    throw Errors.badRequest('无效的房间状态')
+  }
+
+  const room = await findRoomByNumber(roomNumber)
+  if (!room) {
+    throw Errors.notFound('房间不存在')
+  }
+
+  await updateRoomStatus(roomNumber, status)
+  res.json({ success: true, data: { roomNumber, status } })
 })

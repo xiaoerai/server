@@ -6,6 +6,7 @@ import checkinRouter from './checkin'
 import depositRouter from './deposit'
 import userRouter from './user'
 import roomsRouter from './rooms'
+import adminRouter from './admin'
 
 const router = express.Router()
 
@@ -27,5 +28,8 @@ router.use('/user', userRouter)
 
 // 房间
 router.use('/rooms', roomsRouter)
+
+// 管理员
+router.use('/admin', adminRouter)
 
 export default router

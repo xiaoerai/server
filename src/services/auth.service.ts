@@ -1,11 +1,5 @@
 import jwt from 'jsonwebtoken'
-import {
-  verifySmsCode,
-  deleteSmsCode,
-  findUserByPhone,
-  createUser,
-  updateUserLogin,
-} from '../db'
+import { verifySmsCode, deleteSmsCode, findUserByPhone, createUser, updateUserLogin } from '../db'
 import { getAlipayUserId } from './alipay.service'
 import { code2Session } from './wechat.service'
 
@@ -19,6 +13,7 @@ export interface JwtPayload {
   phone: string
   openid?: string
   alipayUserId?: string
+  role?: 'admin'
 }
 
 function signToken(payload: JwtPayload): string {

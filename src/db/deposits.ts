@@ -36,6 +36,34 @@ export async function createDeposit(
   return id as string
 }
 
+// 查询押金列表（分页 + 状态筛选）
+export async function findAllDeposits(params: {
+  status?: string
+  page: number
+  pageSize: number
+}): Promise<Deposit[]> {
+  const where: Record<string, unknown> = {}
+  if (params.status) where.status = params.status
+
+  const skip = (params.page - 1) * params.pageSize
+  const { data } = await collection
+    .where(where)
+    .orderBy('createdAt', 'desc')
+    .skip(skip)
+    .limit(params.pageSize)
+    .get()
+  return data as Deposit[]
+}
+
+// 统计押金记录数量
+export async function countDeposits(params: { status?: string }): Promise<number> {
+  const where: Record<string, unknown> = {}
+  if (params.status) where.status = params.status
+
+  const { total } = await collection.where(where).count()
+  return total ?? 0
+}
+
 // 更新押金状态（按 orderId + 当前状态匹配）
 export async function updateDeposit(
   orderId: string,

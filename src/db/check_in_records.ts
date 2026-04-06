@@ -37,6 +37,52 @@ export async function findRecordsByPhone(phone: string): Promise<CheckInRecord[]
   return data as CheckInRecord[]
 }
 
+// 查询入住记录列表（分页 + 状态/日期筛选）
+export async function findAllCheckInRecords(params: {
+  status?: string
+  startDate?: string
+  endDate?: string
+  page: number
+  pageSize: number
+}): Promise<CheckInRecord[]> {
+  const where: Record<string, unknown> = {}
+  if (params.status) where.status = params.status
+  if (params.startDate) where.checkInDate = _.gte(params.startDate)
+  if (params.endDate) {
+    where.checkOutDate = where.checkOutDate
+      ? { ...(where.checkOutDate as object), ..._.lte(params.endDate) }
+      : _.lte(params.endDate)
+  }
+
+  const skip = (params.page - 1) * params.pageSize
+  const { data } = await collection
+    .where(where)
+    .orderBy('createdAt', 'desc')
+    .skip(skip)
+    .limit(params.pageSize)
+    .get()
+  return data as CheckInRecord[]
+}
+
+// 统计入住记录数量
+export async function countCheckInRecords(params: {
+  status?: string
+  startDate?: string
+  endDate?: string
+}): Promise<number> {
+  const where: Record<string, unknown> = {}
+  if (params.status) where.status = params.status
+  if (params.startDate) where.checkInDate = _.gte(params.startDate)
+  if (params.endDate) {
+    where.checkOutDate = where.checkOutDate
+      ? { ...(where.checkOutDate as object), ..._.lte(params.endDate) }
+      : _.lte(params.endDate)
+  }
+
+  const { total } = await collection.where(where).count()
+  return total ?? 0
+}
+
 // 创建入住记录
 export async function createCheckInRecord(
   record: Omit<CheckInRecord, '_id' | 'createdAt' | 'updatedAt'>
