@@ -1,10 +1,16 @@
 import express from 'express'
-import { createCheckIn, getCheckIn, updateCheckIn, checkOut } from '../controllers/checkin.controller'
+import {
+  createCheckIn,
+  getCheckIn,
+  updateCheckIn,
+  checkOut,
+} from '../controllers/checkin.controller'
+import { auth } from '../middleware/auth'
 
 const router = express.Router()
 
-// POST /api/checkin - 创建入住记录
-router.post('/', createCheckIn)
+// POST /api/checkin - 创建入住记录（需要登录）
+router.post('/', auth, createCheckIn)
 
 // POST /api/checkout - 退房
 router.post('/checkout', checkOut)
