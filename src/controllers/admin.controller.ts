@@ -7,6 +7,7 @@ import {
   countCheckInRecords,
   findRecordByOrderId,
 } from '../db/check_in_records'
+import { findGuestsByIds } from '../db/guests'
 
 // POST /api/admin/login
 export const login = asyncHandler(async (req: Request, res: Response) => {
@@ -60,5 +61,23 @@ export const getCheckins = asyncHandler(async (req: Request, res: Response) => {
     countCheckInRecords({ status, startDate, endDate }),
   ])
 
-  res.json({ success: true, data: { list, total, page, pageSize } })
+  // 批量查询 guests
+  const allGuestIds = [...new Set(list.flatMap((r) => r.guestIds || []))]
+  const allGuests = await findGuestsByIds(allGuestIds)
+  const guestMap = new Map(allGuests.map((g) => [g._id, g]))
+
+  const enriched = list.map((record) => ({
+    ...record,
+    guests: (record.guestIds || [])
+      .map((id) => guestMap.get(id))
+      .filter(Boolean)
+      .map((g) => ({
+        _id: g!._id,
+        name: g!.name,
+        idNumber: g!.idNumber,
+        idImageUrl: g!.idImageUrl || null,
+      })),
+  }))
+
+  res.json({ success: true, data: { list: enriched, total, page, pageSize } })
 })

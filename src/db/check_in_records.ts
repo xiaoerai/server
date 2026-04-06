@@ -17,7 +17,7 @@ export interface CheckInRecord {
   depositId?: string // 关联押金记录ID
   depositPaid: boolean // 是否已支付押金
 
-  status: 'pending' | 'checked_in' | 'checked_out'
+  status: 'pending' | 'checked_in' | 'checkout_pending' | 'checked_out'
 
   createdAt: Date
   updatedAt: Date
